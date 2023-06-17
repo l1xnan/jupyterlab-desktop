@@ -7,21 +7,43 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "jupyterlab-desktop",
+    "productName": "Jupyterlab",
     "version": "0.0.0"
   },
   "tauri": {
     "allowlist": {
-      "all": false,
+      "all": true,
       "shell": {
-        "all": false,
+        "all": true,
+        "execute": true,
+        "open": true,
+        "scope": [
+          {
+            "name": "jupyter",
+            "cmd": "jupyter",
+            "args": true
+          },
+          {
+            "name": "python",
+            "cmd": "python",
+            "args": true
+          }
+        ]
+      },
+      "dialog": {
+        "all": true,
         "open": true
+      },
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": ["https://blog.jupyter.org/feed"]
       }
     },
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "rs.jupyterlab.desktop",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -31,15 +53,16 @@
       ]
     },
     "security": {
-      "csp": null
+      "csp": "default-src '*'; frame-src '*'; frame-ancestors '*'"
     },
     "windows": [
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "jupyterlab-desktop",
-        "width": 800,
-        "height": 600
+        "title": "JupyterLab",
+        "width": 1000,
+        "height": 800,
+        "transparent": true
       }
     ]
   }

@@ -5,3 +5,59 @@
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafb);
 }
+
+.welcome {
+  text-align: left;
+  padding: 0 15%;
+}
+
+.welcome-logo {
+  height: 6em;
+  padding-top: 10%;
+  padding-bottom: 30px;
+  will-change: filter;
+  transition: 0.75s;
+}
+
+.welcome-content {
+  display: flex;
+  align-items: start;
+  justify-content: space-around;
+}
+
+.left {
+  width: 50vw;
+  display: flex;
+  justify-content: left;
+  flex-direction: column;
+  text-align: left;
+  height: 100%;
+}
+.right {
+  width: 50vw;
+  text-align: left;
+  height: 100%;
+}
+
+.title {
+  font-size: 18px;
+  padding-bottom: 18px;
+}
+.title-extra {
+  padding-top: 24px;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.action-row {
+  padding: 4px 0;
+  background-color: transparent;
+  border-style: none;
+  outline: none;
+  text-align: left;
+  cursor: pointer;
+}
