@@ -1,83 +1,19 @@
 import { useEffect, useState } from "react";
 import JupyterLogo from "./assets/jupyterlab-wordmark.svg";
-import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 import { open } from "@tauri-apps/api/dialog";
-import { Command } from "@tauri-apps/api/shell";
 import { shell } from "@tauri-apps/api";
 import {
+  checkServer,
   createServer,
   getNewsList,
   getRunningServers,
   INewsItem,
   IServerItem,
 } from "./api";
-import { storage, generateToken } from "./utils";
-
-async function jupyter(folder: string) {
-  let token = generateToken();
-  let port = await invoke("get_free_port");
-  let serverLaunchArgsFixed = [
-    "--no-browser",
-    "--expose-app-in-browser",
-    `--ServerApp.port=${port}`,
-    // use our token rather than any pre-configured password
-    '--ServerApp.password=""',
-    `--ServerApp.token="${token}"`,
-    "--LabApp.quit_button=False",
-    `--ServerApp.tornado_settings={'headers': {'Content-Security-Policy': 'frame-ancestors *'}}`,
-    "--ServerApp.allow_origin=*",
-    "--ServerApp.allow_credentials=True",
-    `--ServerApp.root_dir=${folder}`,
-  ];
-
-  let args = [
-    // "-m",
-    // "jupyterlab",
-    "lab",
-    ...serverLaunchArgsFixed,
-  ];
-
-  console.log(args.join(" "));
-
-  let command = new Command("jupyter", args);
-  command.stderr.on("data", (line) => {
-    console.error("line err:", line);
-  });
-  command.stdout.on("data", (line) => {
-    console.info("line out:", line);
-  });
-  command.on("close", (line) => {
-    console.log("close:", line);
-  });
-  command.on("error", (line) => {
-    console.log("error:", line);
-  });
-  try {
-    let child = await command.spawn();
-    console.log(child);
-  } catch (error) {
-    console.log(error);
-  } finally {
-    let url = `http://localhost:${port}/lab?token=${token}`;
-    return url;
-  }
-}
-
-async function checkServer(server: IServerItem) {
-  try {
-    const res = await fetch(server?.link);
-    return res.status === 200;
-  } catch (error) {
-    console.error(`${server?.link}:`, error);
-  } finally {
-    return false;
-  }
-}
+import { storage } from "./utils";
 
 function App() {
-  const [port, setPort] = useState(0);
-
   const [server, setServer] = useState<string | null>(null);
   const [newsList, setNewsList] = useState<INewsItem[]>([]);
   const [recentList, setRecentList] = useState<IServerItem[]>([]);
@@ -163,7 +99,7 @@ function App() {
               <div className="row">
                 {runningServers?.map((item) => {
                   return (
-                    <div key={item.folder ?? item.link}>
+                    <div key={item?.link ?? item?.folder}>
                       <a
                         className="action-row"
                         onClick={() => {

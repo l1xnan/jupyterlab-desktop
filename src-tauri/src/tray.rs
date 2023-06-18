@@ -1,9 +1,9 @@
-use tauri::Manager;
 use tauri::{
-  AppHandle, CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu,
-  SystemTrayMenuItem,
+  AppHandle, CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, SystemTrayMenuItem,
 };
+use tauri::{Manager, State};
 
+use crate::jupyter::ServerManagerState;
 
 pub const MAIN_WIN: &str = "main";
 
@@ -58,7 +58,7 @@ pub fn handler(app: &AppHandle, event: SystemTrayEvent) {
         }
       }
       "quit" => app.exit(0),
-      _ => {} 
+      _ => {}
     },
     _ => {}
   }
