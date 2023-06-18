@@ -4,8 +4,6 @@
 use rand::Rng;
 use std::{path::Path, process::Command};
 use tauri::{Manager, Window};
-use window_vibrancy::apply_mica;
-use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 mod tray;
 
@@ -112,19 +110,29 @@ fn get_running_servers() -> Vec<Server> {
     res
 }
 
+#[cfg(target_os = "macos")]
+fn apply_style(window: &Window) {
+    use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+    apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)
+        .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+}
+#[cfg(target_os = "windows")]
+fn apply_style(window: &Window) {
+    use window_vibrancy::apply_mica;
+    apply_mica(&window).expect("Unsupported platform! 'apply_mica' is only supported on Windows");
+}
+
+#[cfg(not(any(target_os = "windows", target_os = "macos")))]
+fn apply_style(_window: &Window) {
+    // not support!
+}
+
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
             let window = app.get_window("main").unwrap();
 
-            #[cfg(target_os = "macos")]
-            apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)
-                .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
-
-            #[cfg(target_os = "windows")]
-            apply_mica(&window)
-                .expect("Unsupported platform! 'apply_mica' is only supported on Windows");
-
+            apply_style(&window);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
