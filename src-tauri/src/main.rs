@@ -3,8 +3,9 @@
 
 use rand::Rng;
 use std::{path::Path, process::Command};
-use tauri::{AppHandle, Manager, Window};
-use window_vibrancy::{apply_mica, apply_vibrancy};
+use tauri::{Manager, Window};
+use window_vibrancy::apply_mica;
+use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 mod tray;
 
