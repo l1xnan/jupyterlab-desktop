@@ -7,8 +7,8 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "Jupyterlab",
-    "version": "0.0.0"
+    "productName": "JupyterLab",
+    "version": "0.0.1"
   },
   "tauri": {
     "allowlist": {
@@ -30,6 +30,9 @@
           }
         ]
       },
+      "clipboard": {
+        "all": true
+      },
       "dialog": {
         "all": true,
         "open": true
@@ -38,6 +41,9 @@
         "all": true,
         "request": true,
         "scope": ["https://blog.jupyter.org/feed"]
+      },
+      "window": {
+        "all": true
       }
     },
     "bundle": {
@@ -53,7 +59,7 @@
       ]
     },
     "security": {
-      "csp": "default-src '*'; frame-src '*'; frame-ancestors '*'"
+      "csp": null
     },
     "windows": [
       {
@@ -64,6 +70,10 @@
         "height": 800,
         "transparent": true
       }
-    ]
+    ],
+    "systemTray": {
+      "iconPath": "icons/icon.ico",
+      "iconAsTemplate": true
+    }
   }
 }

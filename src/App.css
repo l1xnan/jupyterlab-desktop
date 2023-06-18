@@ -42,6 +42,7 @@
 .title {
   font-size: 18px;
   padding-bottom: 18px;
+  font-weight: 600;
 }
 .title-extra {
   padding-top: 24px;
@@ -60,4 +61,8 @@
   outline: none;
   text-align: left;
   cursor: pointer;
+}
+
+.disabled {
+  color: grey;
 }

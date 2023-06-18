@@ -2,6 +2,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use rand::Rng;
+use std::{path::Path, process::Command};
+use tauri::{AppHandle, Manager, Window};
+use window_vibrancy::{apply_mica, apply_vibrancy};
+
+mod tray;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -12,6 +17,11 @@ fn greet(name: &str) -> String {
 #[tauri::command]
 fn get_free_port() -> u16 {
     portpicker::pick_unused_port().expect("failed to find unused port")
+}
+
+#[tauri::command]
+fn open_devtools(window: Window) {
+    window.open_devtools();
 }
 
 fn gen_token() -> String {
@@ -27,8 +37,7 @@ fn gen_token() -> String {
 }
 
 #[tauri::command]
-fn new_session(folder: &str) -> String {
-    use std::process::Command;
+fn create_server(folder: &str) -> String {
     let port = portpicker::pick_unused_port().expect("failed to find unused port");
     let token = gen_token();
     // https://github.com/tauri-apps/tauri/discussions/3273
@@ -56,9 +65,83 @@ fn new_session(folder: &str) -> String {
     format!("http://localhost:{port}/lab?token={token}")
 }
 
+#[derive(Clone, serde::Serialize)]
+struct Server {
+    link: String,
+    folder: String,
+    title: String,
+}
+
+#[tauri::command]
+fn get_running_servers() -> Vec<Server> {
+    let output = Command::new("jupyter")
+        .args(["lab", "list"])
+        .output()
+        .expect("failed to execute child");
+
+    let stdout = String::from_utf8(output.stdout).unwrap();
+
+    let mut res: Vec<Server> = vec![];
+
+    for item in stdout.split("\n") {
+        println!("{}", item);
+        if item.starts_with("http") {
+            let servers: Vec<&str> = item.split("::").collect();
+            if servers.len() == 2 {
+                let link = servers[0].trim().to_string();
+                let folder = servers[1].trim();
+
+                let title = Path::new(folder)
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap()
+                    .to_string();
+                println!("{:?}, {:?}", link, folder);
+                res.push(Server {
+                    link,
+                    folder: folder.to_string(),
+                    title,
+                })
+            }
+        }
+    }
+
+    println!("{:?}", stdout);
+    res
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, new_session, get_free_port])
+        .setup(|app| {
+            let window = app.get_window("main").unwrap();
+
+            #[cfg(target_os = "macos")]
+            apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)
+                .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+
+            #[cfg(target_os = "windows")]
+            apply_mica(&window)
+                .expect("Unsupported platform! 'apply_mica' is only supported on Windows");
+
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            create_server,
+            get_free_port,
+            open_devtools,
+            get_running_servers,
+        ])
+        .system_tray(tray::menu())
+        .on_system_tray_event(tray::handler)
+        .on_window_event(|event| match event.event() {
+            tauri::WindowEvent::CloseRequested { api, .. } => {
+                event.window().hide().unwrap();
+                api.prevent_close();
+            }
+            _ => {}
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -1,31 +1,21 @@
 import { useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
 import JupyterLogo from "./assets/jupyterlab-wordmark.svg";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 import { open } from "@tauri-apps/api/dialog";
 import { Command } from "@tauri-apps/api/shell";
 import { shell } from "@tauri-apps/api";
-import { ResponseType, getClient } from "@tauri-apps/api/http";
-import { XMLParser } from "fast-xml-parser";
-
-export const SERVER_TOKEN_PREFIX = "jlab:srvr:";
-
-function randomHexString(size: number) {
-  const bytes = new Uint8Array(size);
-  window.crypto.getRandomValues(bytes);
-
-  return Array.from(bytes)
-    .map((i) => ("0" + i.toString(16)).slice(-2))
-    .join("");
-}
-
-function _generateToken() {
-  return SERVER_TOKEN_PREFIX + randomHexString(19);
-}
+import {
+  createServer,
+  getNewsList,
+  getRunningServers,
+  INewsItem,
+  IServerItem,
+} from "./api";
+import { storage, generateToken } from "./utils";
 
 async function jupyter(folder: string) {
-  let token = _generateToken();
+  let token = generateToken();
   let port = await invoke("get_free_port");
   let serverLaunchArgsFixed = [
     "--no-browser",
@@ -74,111 +64,50 @@ async function jupyter(folder: string) {
   }
 }
 
-export interface INewsItem {
-  title: string;
-  link: string;
-}
-
-export interface ISessionItem {
-  title?: string;
-  link: string;
-  folder: string;
-}
-
-async function getNewsList() {
-  const newsFeedUrl = "https://blog.jupyter.org/feed";
-  const maxNewsToShow = 10;
-
+async function checkServer(server: IServerItem) {
   try {
-    const response = await fetch(newsFeedUrl);
-    const data = await response.text();
-    const parser = new XMLParser();
-    const feed = parser.parse(data);
-    const newsList: INewsItem[] = [];
-    for (const item of feed.rss.channel.item) {
-      newsList.push({
-        title: item.title,
-        link: encodeURIComponent(item.link),
-      });
-      if (newsList.length === maxNewsToShow) {
-        break;
-      }
-    }
-    return newsList;
+    const res = await fetch(server?.link);
+    return res.status === 200;
   } catch (error) {
-    console.error("Failed to get news list:", error);
+    console.error(`${server?.link}:`, error);
+  } finally {
+    return false;
   }
 }
-async function _getNewsList() {
-  const newsFeedUrl = "https://blog.jupyter.org/feed";
-  const maxNewsToShow = 10;
-
-  try {
-    const client = await getClient();
-    const response = await client.get(newsFeedUrl, {
-      responseType: ResponseType.Text,
-    });
-
-    const data: string = response.data as string;
-    const parser = new XMLParser();
-    const feed = parser.parse(data);
-    const newsList: INewsItem[] = [];
-    for (const item of feed.rss.channel.item) {
-      newsList.push({
-        title: item.title,
-        link: encodeURIComponent(item.link),
-      });
-      if (newsList.length === maxNewsToShow) {
-        break;
-      }
-    }
-    console.table(newsList);
-    return newsList;
-  } catch (error) {
-    console.error("Failed to get news list:", error);
-  }
-}
-
-const storage = {
-  getItem: (key: string, defaultValue: any = null) => {
-    let value = localStorage.getItem(key);
-    if (value !== null) {
-      return JSON.parse(value);
-    }
-    return defaultValue;
-  },
-  setItem: (key: string, value: any) => {
-    localStorage.setItem(key, JSON.stringify(value));
-  },
-};
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
   const [port, setPort] = useState(0);
 
-  const [session, setSession] = useState<string | null>(null);
+  const [server, setServer] = useState<string | null>(null);
   const [newsList, setNewsList] = useState<INewsItem[]>([]);
-  const [recentList, setRecentList] = useState<ISessionItem[]>([]);
+  const [recentList, setRecentList] = useState<IServerItem[]>([]);
+  const [runningServers, setRunningServers] = useState<IServerItem[]>([]);
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name }));
-  }
+  useEffect(() => {
+    (async () => {
+      let servers = await getRunningServers();
+      console.table(servers);
+      for (let server of servers) {
+        const status = await checkServer(server);
+        console.log(status);
+      }
+      setRunningServers(servers);
+    })();
+  }, []);
 
   useEffect(() => {
     setNewsList(storage.getItem("newsList", []));
     setRecentList(storage.getItem("recentList", []));
 
     const tmp = async () => {
-      const newsList = (await _getNewsList()) ?? [];
+      const newsList = (await getNewsList()) ?? [];
       setNewsList(newsList);
       storage.setItem("newsList", newsList);
     };
     tmp();
   }, []);
 
-  const rend = () => {
+  const Welcome = () => {
     return (
       <div className="welcome">
         <img
@@ -201,14 +130,12 @@ function App() {
                     });
                     console.log(folder);
                     if (typeof folder === "string" && folder) {
-                      let session: string = await invoke("new_session", {
-                        folder,
-                      });
-                      console.log("session:", session);
-                      setSession(session as string);
-                      let newList: ISessionItem[] = [
+                      let server = await createServer(folder);
+                      console.log("server:", server);
+                      setServer(server as string);
+                      let newList: IServerItem[] = [
                         {
-                          link: session,
+                          link: server,
                           folder,
                           title: folder.split(/\\|\//).at(-1),
                         },
@@ -225,9 +152,30 @@ function App() {
                   打开(Open...)
                 </a>
 
-                <a className="action-row">新建会话(New Session...)</a>
-                <a className="action-row">新建笔记(New Notebook...)</a>
-                <a className="action-row">连接(Connect...)</a>
+                <a className="action-row disabled">新建会话(New Session...)</a>
+                <a className="action-row disabled">新建笔记(New Notebook...)</a>
+                <a className="action-row disabled">连接(Connect...)</a>
+              </div>
+            </div>
+            <div>
+              <div className="title title-extra">正在运行(Running)</div>
+
+              <div className="row">
+                {runningServers?.map((item) => {
+                  return (
+                    <div key={item.folder ?? item.link}>
+                      <a
+                        className="action-row"
+                        onClick={() => {
+                          setServer(item.link);
+                        }}
+                      >
+                        {item?.title}
+                      </a>
+                      <span style={{ marginLeft: 8 }}>{item.folder}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
             <div>
@@ -236,15 +184,14 @@ function App() {
               <div className="row">
                 {recentList?.map((item) => {
                   return (
-                    <div>
+                    <div key={item.folder ?? item.link}>
                       <a
                         className="action-row"
-                        key={item.folder ?? item.link}
                         onClick={() => {
-                          setSession(item.link);
+                          setServer(item.link);
                         }}
                       >
-                        {item.title.split(/\\|\//).at(-1)}
+                        {item?.title?.split(/\\|\//).at(-1)}
                       </a>
                       <span style={{ marginLeft: 8 }}>{item.folder}</span>
                     </div>
@@ -256,14 +203,14 @@ function App() {
           <div className="right">
             <div className="row row-title title">Jupyter News</div>
 
-            <div id="news-list" className="news-list-col">
+            <div id="news-list" className="news-list-col action-row more-row">
               {
                 // populate news list from cache
                 newsList.map((news: INewsItem) => {
                   return (
                     <div className="row" key={news.link}>
                       <a
-                        onClick={() => {
+                        onClick={async () => {
                           shell.open(news.link);
                         }}
                       >
@@ -292,13 +239,13 @@ function App() {
 
   return (
     <div className="container">
-      {session ? (
+      {server ? (
         <iframe
-          src={session}
+          src={server}
           style={{ margin: 0, border: "none", padding: 0, minHeight: "100vh" }}
         ></iframe>
       ) : (
-        rend()
+        Welcome()
       )}
     </div>
   );
