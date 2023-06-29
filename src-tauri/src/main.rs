@@ -46,11 +46,17 @@ fn apply_style(_window: &Window) {
 /// "RendererCodeIntegrityEnabled"=dword:00000000
 /// ```
 fn init_reg() -> io::Result<()> {
+  init_reg_item(r#"SOFTWARE\Policies\Microsoft\Edge\WebView2"#)?;
+  init_reg_item(r#"SOFTWARE\Policies\Microsoft\Edge"#)?;
+  Ok(())
+}
+
+fn init_reg_item(path: &str) -> io::Result<()> {
   use winreg::enums::*;
   use winreg::RegKey;
 
   let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
-  let (key, disp) = hklm.create_subkey(r#"SOFTWARE\Policies\Microsoft\Edge\WebView2"#)?;
+  let (key, disp) = hklm.create_subkey(path)?;
 
   match disp {
     REG_CREATED_NEW_KEY => println!("A new key has been created"),
