@@ -17,10 +17,16 @@ fn apply_style(window: &Window) {
   apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None)
     .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
 }
+
 #[cfg(target_os = "windows")]
 fn apply_style(window: &Window) {
-  use window_vibrancy::apply_mica;
-  apply_mica(&window).expect("Unsupported platform! 'apply_mica' is only supported on Windows");
+  let info = os_info::get();
+  let win11 = os_info::Version::Semantic(11, 0, 0);
+  if info.version().to_owned() > win11 {
+    use window_vibrancy::apply_mica;
+    apply_mica(&window).expect("Unsupported platform! 'apply_mica' is only supported on Windows");
+  }
+  println!("Version: {}", info.version());
 }
 
 #[cfg(not(any(target_os = "windows", target_os = "macos")))]
