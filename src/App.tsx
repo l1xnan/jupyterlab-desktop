@@ -120,7 +120,7 @@ function App() {
               <div className="row">
                 {recentList?.map((item) => {
                   return (
-                    <div key={item.folder ?? item.link}>
+                    <div key={item.link ?? item.folder}>
                       <a
                         className="action-row"
                         onClick={() => {
