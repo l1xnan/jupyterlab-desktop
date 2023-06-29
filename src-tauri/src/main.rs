@@ -2,7 +2,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::io;
-use std::path::Path;
 use std::sync::Mutex;
 use tauri::{Manager, State, Window};
 
@@ -51,8 +50,7 @@ fn init_reg() -> io::Result<()> {
   use winreg::RegKey;
 
   let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
-  let (key, disp) = hklm
-    .create_subkey(r#"SOFTWARE\Policies\Microsoft\Edge\WebView2"#)?;
+  let (key, disp) = hklm.create_subkey(r#"SOFTWARE\Policies\Microsoft\Edge\WebView2"#)?;
 
   match disp {
     REG_CREATED_NEW_KEY => println!("A new key has been created"),
