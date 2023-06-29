@@ -1,6 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::io;
+use std::path::Path;
 use std::sync::Mutex;
 use tauri::{Manager, State, Window};
 
@@ -34,7 +36,40 @@ fn apply_style(_window: &Window) {
   // not support!
 }
 
+/// fixed webview2 white screen bug
+/// ```
+/// Windows Registry Editor Version 5.00
+///
+/// [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge\WebView2]
+/// "RendererCodeIntegrityEnabled"=dword:00000000
+///
+/// [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge]
+/// "RendererCodeIntegrityEnabled"=dword:00000000
+/// ```
+fn init_reg() -> io::Result<()> {
+  use winreg::enums::*;
+  use winreg::RegKey;
+
+  let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
+  let (key, disp) = hklm
+    .create_subkey(r#"SOFTWARE\Policies\Microsoft\Edge\WebView2"#)?;
+
+  match disp {
+    REG_CREATED_NEW_KEY => println!("A new key has been created"),
+    REG_OPENED_EXISTING_KEY => println!("An existing key has been opened"),
+  }
+
+  let _ = key.set_value("RendererCodeIntegrityEnabled", &0u32);
+
+  let val: u32 = key.get_value("RendererCodeIntegrityEnabled")?;
+  println!("RendererCodeIntegrityEnabled = {}", val);
+  Ok(())
+}
+
 fn main() {
+  #[cfg(target_os = "windows")]
+  let _ = init_reg();
+
   let manger = ServerManger::new();
   let state = ServerManagerState {
     manager_mutex: Mutex::new(manger),

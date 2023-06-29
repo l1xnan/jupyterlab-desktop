@@ -21,6 +21,7 @@ rand = "0.8.5"
 window-vibrancy = "0.3.2"
 url = "2.4.0"
 os_info = "3.7.0"
+winreg = "0.50.0"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
