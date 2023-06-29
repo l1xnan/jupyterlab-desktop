@@ -9,7 +9,9 @@ mod command;
 mod jupyter;
 mod tray;
 mod utils;
-use crate::command::{create_server, get_free_port, get_running_servers, greet, open_devtools};
+use crate::command::{
+  create_server, get_free_port, get_running_servers, greet, jupyter_config, open_devtools,
+};
 use crate::jupyter::{ServerManagerState, ServerManger};
 
 #[cfg(target_os = "macos")]
@@ -73,6 +75,7 @@ fn init_reg_item(path: &str) -> io::Result<()> {
 fn main() {
   #[cfg(target_os = "windows")]
   let _ = init_reg();
+  jupyter_config();
 
   let manger = ServerManger::new();
   let state = ServerManagerState {
