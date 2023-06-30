@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use log::info;
 use std::io;
 use std::sync::Mutex;
 use tauri::{Manager, State, Window};
@@ -14,6 +15,7 @@ use crate::command::{
   create_server, get_free_port, get_running_servers, greet, open_devtools, open_window,
 };
 use crate::jupyter::{ServerManagerState, ServerManger};
+use crate::tray::MAIN_WIN;
 
 #[cfg(target_os = "macos")]
 fn apply_style(window: &Window) {
@@ -101,8 +103,14 @@ fn main() {
     .on_system_tray_event(tray::handler)
     .on_window_event(|event| match event.event() {
       tauri::WindowEvent::CloseRequested { api, .. } => {
-        event.window().hide().unwrap();
-        api.prevent_close();
+        let win = event.window();
+        info!("close request window title: {}", win.title().unwrap());
+        if win.label() == MAIN_WIN {
+          win.hide().unwrap();
+          api.prevent_close();
+        } else {
+          let _ = win.close();
+        }
       }
       tauri::WindowEvent::Destroyed => {
         let state: State<ServerManagerState> = event.window().state();
