@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import JupyterLogo from "./assets/jupyterlab-wordmark.svg";
 import "./App.css";
 import { open } from "@tauri-apps/api/dialog";
@@ -19,14 +19,18 @@ function App() {
   const [recentList, setRecentList] = useState<IServerItem[]>([]);
   const [runningServers, setRunningServers] = useState<IServerItem[]>([]);
 
+  // resolve StrictMode in development render twice question
+  const renderRef = useRef(true); 
+
   useEffect(() => {
+    if (renderRef.current) {
+      renderRef.current = false;
+      return;
+    }
     (async () => {
+      console.info("**********");
       let servers = await getRunningServers();
       console.table(servers);
-      for (let server of servers) {
-        const status = await checkServer(server);
-        console.log(status);
-      }
       setRunningServers(servers);
     })();
   }, []);
