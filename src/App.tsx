@@ -20,10 +20,12 @@ function App() {
   const [runningServers, setRunningServers] = useState<IServerItem[]>([]);
 
   // resolve StrictMode in development render twice question
-  const renderRef = useRef(true); 
+  const renderRef = useRef(true);
 
   useEffect(() => {
-    if (renderRef.current) {
+    console.info("==========");
+    console.log("DEV:", import.meta.env.DEV);
+    if (import.meta.env.DEV && renderRef.current) {
       renderRef.current = false;
       return;
     }
@@ -141,36 +143,7 @@ function App() {
             </div>
           </div>
           <div className="right">
-            <div className="row row-title title">Jupyter News</div>
-
-            <div id="news-list" className="news-list-col action-row more-row">
-              {
-                // populate news list from cache
-                newsList.map((news: INewsItem) => {
-                  return (
-                    <div className="row" key={news.link}>
-                      <a
-                        onClick={async () => {
-                          shell.open(news.link);
-                        }}
-                      >
-                        {news.title}
-                      </a>
-                    </div>
-                  );
-                })
-              }
-            </div>
-
-            <div className="row action-row more-row news-col-footer">
-              <a
-                onClick={async () => {
-                  shell.open("https://blog.jupyter.org");
-                }}
-              >
-                Jupyter Blog
-              </a>
-            </div>
+            <News newsList={newsList} />
           </div>
         </div>
       </div>
@@ -188,6 +161,43 @@ function App() {
         Welcome()
       )}
     </div>
+  );
+}
+
+function News({ newsList }: { newsList: INewsItem[] }) {
+  return (
+    <>
+      <div className="row row-title title">Jupyter News</div>
+
+      <div id="news-list" className="news-list-col action-row more-row">
+        {
+          // populate news list from cache
+          newsList.map((news: INewsItem) => {
+            return (
+              <div className="row" key={news.link}>
+                <a
+                  onClick={async () => {
+                    shell.open(news.link);
+                  }}
+                >
+                  {news.title}
+                </a>
+              </div>
+            );
+          })
+        }
+      </div>
+
+      <div className="row action-row more-row news-col-footer">
+        <a
+          onClick={async () => {
+            shell.open("https://blog.jupyter.org");
+          }}
+        >
+          Jupyter Blog
+        </a>
+      </div>
+    </>
   );
 }
 

@@ -1,7 +1,7 @@
 {
   "name": "jupyterlab-desktop",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,7 +14,8 @@
     "@tauri-apps/api": "^1.4.0",
     "fast-xml-parser": "^4.2.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log#v1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.4.0",

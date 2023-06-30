@@ -1,3 +1,5 @@
+use log::{error, info, warn};
+use std::os::windows::process::CommandExt;
 use std::{fs, io::Write, process::Command};
 
 use tauri::api::path::home_dir;
@@ -7,6 +9,8 @@ use crate::{
   jupyter::{Server, ServerManagerState},
   utils::gen_token,
 };
+
+const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -29,28 +33,31 @@ pub fn create_server(state: State<ServerManagerState>, folder: &str) -> String {
   let port = portpicker::pick_unused_port().expect("failed to find unused port");
   let token = gen_token();
   // https://github.com/tauri-apps/tauri/discussions/3273
-  let child = Command::new("jupyter")
-    .args([
-      "lab",
-      "--no-browser",
-      "--expose-app-in-browser",
-      "--ServerApp.port",
-      format!("{port}").as_str(),
-      // use our token rather than any pre-configured password
-      "--ServerApp.password=''",
-      "--ServerApp.token",
-      token.as_str(),
-      "--LabApp.quit_button=False",
-      "--ServerApp.tornado_settings={'headers': {'Content-Security-Policy': 'frame-ancestors *'}}",
-      "--ServerApp.allow_origin=*",
-      "--ServerApp.allow_credentials=True",
-      "--ServerApp.root_dir",
-      folder,
-    ])
-    .spawn()
-    .expect("failed to execute child");
+  let mut command = Command::new("jupyter");
 
-  println!("1:child.id()={}", child.id());
+  command.args([
+    "lab",
+    "--no-browser",
+    "--expose-app-in-browser",
+    "--ServerApp.port",
+    format!("{port}").as_str(),
+    // use our token rather than any pre-configured password
+    "--ServerApp.password=''",
+    "--ServerApp.token",
+    token.as_str(),
+    "--ServerApp.tornado_settings={'headers': {'Content-Security-Policy': 'frame-ancestors *'}}",
+    "--ServerApp.allow_origin=*",
+    "--ServerApp.allow_credentials=True",
+    "--ServerApp.root_dir",
+    folder,
+  ]);
+
+  #[cfg(target_os = "windows")]
+  command.creation_flags(CREATE_NO_WINDOW);
+
+  let child = command.spawn().expect("failed to execute child");
+
+  info!("child.id()={}", child.id());
   let _ = state.manager_mutex.lock().unwrap().start(child);
   format!("http://localhost:{port}/lab?token={token}")
 }
@@ -58,7 +65,7 @@ pub fn create_server(state: State<ServerManagerState>, folder: &str) -> String {
 /// parse command output
 pub fn parse_output(bytes: Vec<u8>) -> Vec<Server> {
   let content = String::from_utf8(bytes).unwrap();
-  println!("output: {}", content);
+  info!("output: {}", content);
 
   let mut data: Vec<Server> = vec![];
 
@@ -71,7 +78,7 @@ pub fn parse_output(bytes: Vec<u8>) -> Vec<Server> {
           link = tmp.trim();
         }
         let folder = servers[1].trim();
-        println!("{:?}, {:?}", link, folder);
+        warn!("{:?}, {:?}", link, folder);
         data.push(Server::new(link, folder))
       }
     }
@@ -81,8 +88,14 @@ pub fn parse_output(bytes: Vec<u8>) -> Vec<Server> {
 
 #[tauri::command]
 pub async fn get_running_servers() -> Vec<Server> {
-  println!("query running server...");
-  let res = Command::new("jupyter").args(["lab", "list"]).output();
+  info!("query running server...");
+  let mut command = Command::new("jupyter");
+  command.args(["lab", "list"]);
+
+  #[cfg(target_os = "windows")]
+  command.creation_flags(CREATE_NO_WINDOW);
+
+  let res = command.output();
 
   match res {
     Ok(output) => {
@@ -96,7 +109,7 @@ pub async fn get_running_servers() -> Vec<Server> {
       data
     }
     Err(err) => {
-      println!("{:?}", err);
+      error!("{:?}", err);
       vec![]
     }
   }

@@ -4,6 +4,7 @@
 use std::io;
 use std::sync::Mutex;
 use tauri::{Manager, State, Window};
+use tauri_plugin_log::LogTarget;
 
 mod command;
 mod jupyter;
@@ -109,6 +110,11 @@ fn main() {
       }
       _ => {}
     })
+    .plugin(
+      tauri_plugin_log::Builder::default()
+        .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
+        .build(),
+    )
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
