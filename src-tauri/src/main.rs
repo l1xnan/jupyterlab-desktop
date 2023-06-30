@@ -12,6 +12,7 @@ mod tray;
 mod utils;
 use crate::command::{
   create_server, get_free_port, get_running_servers, greet, jupyter_config, open_devtools,
+  open_window,
 };
 use crate::jupyter::{ServerManagerState, ServerManger};
 
@@ -96,6 +97,7 @@ fn main() {
       get_free_port,
       open_devtools,
       get_running_servers,
+      open_window,
     ])
     .system_tray(tray::menu())
     .on_system_tray_event(tray::handler)

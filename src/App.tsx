@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import JupyterLogo from "./assets/jupyterlab-wordmark.svg";
 import "./App.css";
 import { open } from "@tauri-apps/api/dialog";
-import { shell } from "@tauri-apps/api";
+import { invoke, shell } from "@tauri-apps/api";
 import {
   checkServer,
   createServer,
@@ -12,6 +12,7 @@ import {
   IServerItem,
 } from "./api";
 import { storage } from "./utils";
+import { WebviewWindow } from "@tauri-apps/api/window";
 
 function App() {
   const [server, setServer] = useState<string | null>(null);
@@ -109,7 +110,21 @@ function App() {
                       <a
                         className="action-row"
                         onClick={() => {
-                          setServer(item.link);
+                          invoke("open_window", { url: item?.link });
+                          // const webview = new WebviewWindow("theUniqueLabel", {
+                          //   url: item?.link,
+                          //   decorations: false,
+                          // });
+                          // // since the webview window is created asynchronously,
+                          // // Tauri emits the `tauri://created` and `tauri://error` to notify you of the creation response
+                          // webview.once("tauri://created", function () {
+                          //   // webview window successfully created
+                          // });
+                          // webview.once("tauri://error", function (e) {
+                          //   // an error occurred during webview window creation
+                          // });
+
+                          // setServer(item.link);
                         }}
                       >
                         {item?.title}

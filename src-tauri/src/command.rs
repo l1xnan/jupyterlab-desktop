@@ -1,9 +1,10 @@
 use log::{error, info, warn};
 use std::os::windows::process::CommandExt;
 use std::{fs, io::Write, process::Command};
+use tauri::ipc::RemoteDomainAccessScope;
 
 use tauri::api::path::home_dir;
-use tauri::{State, Window};
+use tauri::{Manager, State, Window};
 
 use crate::{
   jupyter::{Server, ServerManagerState},
@@ -149,4 +150,36 @@ c.ServerApp.tornado_settings["headers"]["Content-Security-Policy"] = "frame-ance
   } else {
     println!("home dir get error!");
   }
+}
+
+const INIT_SCRIPT: &str = r#"
+window.onload = ()=> {
+  var tmp = document.getElementById("jp-top-panel");
+  console.log(tmp);
+  setTimeout(function(){
+      var tmp = document.getElementById("jp-top-panel");
+      console.log(tmp);
+      tmp.setAttribute("data-tauri-drag-region", "");
+    }, 5000);
+}
+console.log("hello world from js init script");
+"#;
+
+#[tauri::command]
+pub async fn open_window(handle: tauri::AppHandle, url: String) {
+  let _ = tauri::WindowBuilder::new(
+    &handle,
+    "external", /* the unique window label */
+    tauri::WindowUrl::External(url.parse().unwrap()),
+  )
+  .initialization_script(INIT_SCRIPT)
+  .decorations(false)
+  .build()
+  .unwrap();
+  handle.ipc_scope().configure_remote_access(
+    RemoteDomainAccessScope::new("localhost")
+      .add_window("main")
+      .add_window("external")
+      .enable_tauri_api(),
+  );
 }
