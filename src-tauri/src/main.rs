@@ -11,8 +11,7 @@ mod jupyter;
 mod tray;
 mod utils;
 use crate::command::{
-  create_server, get_free_port, get_running_servers, greet, jupyter_config, open_devtools,
-  open_window,
+  create_server, get_free_port, get_running_servers, greet, open_devtools, open_window,
 };
 use crate::jupyter::{ServerManagerState, ServerManger};
 

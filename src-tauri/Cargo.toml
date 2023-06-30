@@ -24,6 +24,7 @@ url = "2.4.0"
 os_info = "3.7.0"
 winreg = "0.50.0"
 log = "0.4.19"
+lazy_static = "1.4.0"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

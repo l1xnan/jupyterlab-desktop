@@ -1636,6 +1636,7 @@ dependencies = [
 name = "jupyterlab-desktop"
 version = "0.0.0"
 dependencies = [
+ "lazy_static",
  "log",
  "os_info",
  "portpicker",

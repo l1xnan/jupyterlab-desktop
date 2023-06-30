@@ -26,3 +26,17 @@ export const SERVER_TOKEN_PREFIX = "jlab:srvr:";
 export function generateToken() {
   return SERVER_TOKEN_PREFIX + randomHexString(19);
 }
+
+
+export function uniqueBy(arr: any[], key: string) {
+  let map = new Set();
+  let temp = [];
+  for (let item of arr) {
+    if (!map.has(item[key])) {
+      //如果键值不存在，则写入这个键值并添加到数组
+      map.add(item[key]);
+      temp.push(item);
+    }
+  }
+  return temp;
+}

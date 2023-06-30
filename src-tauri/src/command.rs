@@ -1,17 +1,20 @@
+use lazy_static::lazy_static;
 use log::{error, info, warn};
+use std::collections::HashMap;
 use std::os::windows::process::CommandExt;
-use std::{fs, io::Write, process::Command};
+use std::process::Command;
+use std::sync::Mutex;
 use tauri::ipc::RemoteDomainAccessScope;
+use tauri::{AppHandle, Manager, Window};
+use url::Url;
 
-use tauri::api::path::home_dir;
-use tauri::{Manager, State, Window};
-
-use crate::{
-  jupyter::{Server, ServerManagerState},
-  utils::gen_token,
-};
+use crate::{jupyter::Server, utils::gen_token};
 
 const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+lazy_static! {
+  static ref SERVERS: Mutex<HashMap<String, Server>> = Mutex::new(HashMap::new());
+}
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -30,7 +33,7 @@ pub fn open_devtools(window: Window) {
 }
 
 #[tauri::command]
-pub fn create_server(state: State<ServerManagerState>, folder: &str) -> String {
+pub async fn create_server(handle: AppHandle, window: Window, folder: &str) -> Result<(), ()> {
   let port = portpicker::pick_unused_port().expect("failed to find unused port");
   let token = gen_token();
   // https://github.com/tauri-apps/tauri/discussions/3273
@@ -58,9 +61,34 @@ pub fn create_server(state: State<ServerManagerState>, folder: &str) -> String {
 
   let child = command.spawn().expect("failed to execute child");
 
-  info!("child.id()={}", child.id());
-  let _ = state.manager_mutex.lock().unwrap().start(child);
-  format!("http://localhost:{port}/lab?token={token}")
+  // let _ = state.manager_mutex.lock().unwrap().start(child);
+  let url = format!("http://localhost:{port}/lab?token={token}");
+  info!("child.id={}", child.id());
+  info!("url={}", url);
+
+  let server = Server::new(url.as_str(), folder);
+
+  let origin = server.origin.clone().unwrap();
+  let _ = tauri::WindowBuilder::new(
+    &handle,
+    origin.clone(), /* the unique window label */
+    tauri::WindowUrl::External(url.parse().unwrap()),
+  )
+  .title(origin)
+  .inner_size(1200.0, 800.0)
+  .build()
+  .unwrap();
+
+  let mut servers = SERVERS.lock().unwrap();
+  servers.insert(server.origin.clone().unwrap(), server.clone());
+
+  if let Some(main_win) = window.get_window("main") {
+    main_win.set_focus().unwrap_or(());
+    main_win.unminimize().unwrap_or(());
+    main_win.hide().unwrap_or(());
+  }
+  Ok(())
+  // url
 }
 
 /// parse command output
@@ -88,7 +116,7 @@ pub fn parse_output(bytes: Vec<u8>) -> Vec<Server> {
 }
 
 #[tauri::command]
-pub async fn get_running_servers() -> Vec<Server> {
+pub async fn get_running_servers() -> Result<Vec<Server>, ()> {
   info!("query running server...");
   let mut command = Command::new("jupyter");
   command.args(["lab", "list"]);
@@ -107,75 +135,45 @@ pub async fn get_running_servers() -> Vec<Server> {
 
       data.extend(out_data);
       data.extend(err_data);
-      data
+
+      let mut servers = SERVERS.lock().unwrap();
+      for server in &data {
+        servers.insert(server.origin.clone().unwrap(), server.clone());
+      }
+      Ok(data)
     }
     Err(err) => {
       error!("{:?}", err);
-      vec![]
+      Ok(vec![])
     }
   }
 }
-
-/// fixed iframe security access issue:
-/// ```python
-/// c.ServerApp.tornado_settings = {
-///     "headers": {
-///       "Content-Security-Policy": "frame-ancestors * 'self' "
-///     }
-/// }
-/// ```
-pub fn jupyter_config() {
-  let conf = r#"
-c.ServerApp.tornado_settings.setdefault("headers", {})
-c.ServerApp.tornado_settings["headers"]["Content-Security-Policy"] = "frame-ancestors * 'self'"
-"#;
-
-  if let Some(path) = home_dir() {
-    println!("Your home directory, probably: {}", path.display());
-    let file = path.join(".jupyter/jupyter_lab_config.py");
-    if file.exists() {
-      let content = fs::read_to_string(file.clone()).unwrap();
-
-      if content.contains(conf) {
-        println!("=== included `Content-Security-Policy` config.")
-      } else {
-        let mut writer = fs::OpenOptions::new()
-          .write(true)
-          .append(true) // This is needed to append to file
-          .open(file.as_path().clone())
-          .unwrap();
-        let _ = writer.write(conf.as_bytes());
-      }
-    }
-  } else {
-    println!("home dir get error!");
-  }
-}
-
-const INIT_SCRIPT: &str = r#"
-window.onload = ()=> {
-  var tmp = document.getElementById("jp-top-panel");
-  console.log(tmp);
-  setTimeout(function(){
-      var tmp = document.getElementById("jp-top-panel");
-      console.log(tmp);
-      tmp.setAttribute("data-tauri-drag-region", "");
-    }, 5000);
-}
-console.log("hello world from js init script");
-"#;
 
 #[tauri::command]
-pub async fn open_window(handle: tauri::AppHandle, url: String) {
+pub async fn open_window(handle: AppHandle, window: Window, url: String) {
+  let init_script = include_str!("./init.js");
+
+  let href: Url = Url::parse(url.as_str()).unwrap();
+  let origin = href.origin().unicode_serialization();
+
   let _ = tauri::WindowBuilder::new(
     &handle,
-    "external", /* the unique window label */
+    origin.clone(), /* the unique window label */
     tauri::WindowUrl::External(url.parse().unwrap()),
   )
-  .initialization_script(INIT_SCRIPT)
-  .decorations(false)
+  .initialization_script(init_script)
+  .title(origin)
+  // .decorations(false)
+  .inner_size(1200.0, 800.0)
   .build()
   .unwrap();
+
+  if let Some(main_win) = window.get_window("main") {
+    main_win.set_focus().unwrap_or(());
+    main_win.unminimize().unwrap_or(());
+    main_win.hide().unwrap_or(());
+  }
+
   handle.ipc_scope().configure_remote_access(
     RemoteDomainAccessScope::new("localhost")
       .add_window("main")

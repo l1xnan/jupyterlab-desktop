@@ -4,8 +4,7 @@ import "./App.css";
 import { open } from "@tauri-apps/api/dialog";
 import { invoke, shell } from "@tauri-apps/api";
 import {
-  checkServer,
-  createServer,
+  createServerEnhance,
   getNewsList,
   getRunningServers,
   INewsItem,
@@ -40,7 +39,9 @@ function App() {
 
   useEffect(() => {
     setNewsList(storage.getItem("newsList", []));
-    setRecentList(storage.getItem("recentList", []));
+
+    let recentList = storage.getItem("recentList", []);
+    setRecentList(recentList);
 
     const tmp = async () => {
       const newsList = (await getNewsList()) ?? [];
@@ -73,22 +74,8 @@ function App() {
                     });
                     console.log(folder);
                     if (typeof folder === "string" && folder) {
-                      let server = await createServer(folder);
+                      let server = await createServerEnhance(folder);
                       console.log("server:", server);
-                      setServer(server as string);
-                      let newList: IServerItem[] = [
-                        {
-                          link: server,
-                          folder,
-                          title: folder.split(/\\|\//).at(-1),
-                        },
-                        ...(recentList ?? []),
-                      ];
-                      setRecentList(newList);
-                      localStorage.setItem(
-                        "recentList",
-                        JSON.stringify(newList)
-                      );
                     }
                   }}
                 >
@@ -111,20 +98,6 @@ function App() {
                         className="action-row"
                         onClick={() => {
                           invoke("open_window", { url: item?.link });
-                          // const webview = new WebviewWindow("theUniqueLabel", {
-                          //   url: item?.link,
-                          //   decorations: false,
-                          // });
-                          // // since the webview window is created asynchronously,
-                          // // Tauri emits the `tauri://created` and `tauri://error` to notify you of the creation response
-                          // webview.once("tauri://created", function () {
-                          //   // webview window successfully created
-                          // });
-                          // webview.once("tauri://error", function (e) {
-                          //   // an error occurred during webview window creation
-                          // });
-
-                          // setServer(item.link);
                         }}
                       >
                         {item?.title}
@@ -141,11 +114,11 @@ function App() {
               <div className="row">
                 {recentList?.map((item) => {
                   return (
-                    <div key={item.link ?? item.folder}>
+                    <div key={item.folder}>
                       <a
                         className="action-row"
-                        onClick={() => {
-                          setServer(item.link);
+                        onClick={async () => {
+                          await createServerEnhance(item.folder);
                         }}
                       >
                         {item?.title?.split(/\\|\//).at(-1)}

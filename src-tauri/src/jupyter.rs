@@ -25,7 +25,7 @@ impl Server {
 
     let mut token: Option<String> = None;
 
-    let url = Url::parse(link).unwrap();
+    let url: Url = Url::parse(link).unwrap();
     for param in url.query_pairs() {
       if param.0 == "token" {
         println!("{}, {}", param.0, param.1);
@@ -58,8 +58,8 @@ impl Server {
 }
 pub struct ServerManger {
   // cmd: Command,
-  child: Option<Child>,
-  servers: Vec<Server>,
+  pub(crate) child: Option<Child>,
+  pub(crate) servers: Vec<Server>,
 }
 
 impl ServerManger {

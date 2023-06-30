@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api";
 import { ResponseType, getClient } from "@tauri-apps/api/http";
 import { Command } from "@tauri-apps/api/shell";
 import { XMLParser } from "fast-xml-parser";
+import { storage, uniqueBy } from "./utils";
 
 export interface IServerItem {
   title?: string;
@@ -20,6 +21,21 @@ export async function getRunningServers(): Promise<IServerItem[]> {
 
 export async function createServer(folder: string): Promise<string> {
   return await invoke("create_server", { folder });
+}
+
+export async function createServerEnhance(folder: string) {
+  let server = await createServer(folder);
+  console.log("server:", server);
+  let item = {
+    link: "",
+    folder,
+    title: folder.split(/\\|\//).at(-1),
+  };
+
+  let recentList = storage.getItem("recentList", []);
+  let newList: IServerItem[] = uniqueBy([item, ...recentList], "folder");
+  localStorage.setItem("recentList", JSON.stringify(newList));
+  return server;
 }
 
 export interface INewsItem {
