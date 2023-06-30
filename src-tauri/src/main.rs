@@ -77,7 +77,6 @@ fn init_reg_item(path: &str) -> io::Result<()> {
 fn main() {
   #[cfg(target_os = "windows")]
   let _ = init_reg();
-  jupyter_config();
 
   let manger = ServerManger::new();
   let state = ServerManagerState {
