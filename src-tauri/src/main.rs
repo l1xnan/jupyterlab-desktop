@@ -56,8 +56,9 @@ fn init_reg() -> io::Result<()> {
   Ok(())
 }
 
+#[cfg(target_os = "windows")]
 fn init_reg_item(path: &str) -> io::Result<()> {
-  use winreg::enums::*;
+  use winreg::enums::{HKEY_LOCAL_MACHINE, REG_CREATED_NEW_KEY, REG_OPENED_EXISTING_KEY};
   use winreg::RegKey;
 
   let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
