@@ -50,6 +50,7 @@ fn apply_style(_window: &Window) {
 /// [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge]
 /// "RendererCodeIntegrityEnabled"=dword:00000000
 /// ```
+#[cfg(target_os = "windows")]
 fn init_reg() -> io::Result<()> {
   init_reg_item(r#"SOFTWARE\Policies\Microsoft\Edge\WebView2"#)?;
   init_reg_item(r#"SOFTWARE\Policies\Microsoft\Edge"#)?;

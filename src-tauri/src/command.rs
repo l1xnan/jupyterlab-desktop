@@ -1,12 +1,14 @@
 use lazy_static::lazy_static;
 use log::{error, info, warn};
 use std::collections::HashMap;
-use std::os::windows::process::CommandExt;
 use std::process::Command;
 use std::sync::Mutex;
 use tauri::ipc::RemoteDomainAccessScope;
 use tauri::{AppHandle, Manager, Window};
 use url::Url;
+
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
 
 use crate::{jupyter::Server, utils::gen_token};
 
