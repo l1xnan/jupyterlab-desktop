@@ -1,4 +1,5 @@
-# JupyterLab desktop
+# JupyterLab Desktop
+
 
 JupyterLab Desktop 是基于 [Tauri](https://github.com/tauri-apps/tauri) 开发的 JupyterLab 桌面客户端。相比官方客户端，它非常轻量，仅有不到 5M 大小。
 
