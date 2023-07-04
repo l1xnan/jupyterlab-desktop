@@ -105,7 +105,7 @@ function App() {
                   <form
                     onSubmit={form.onSubmit(async ({ url }) => {
                       console.log(url);
-                      // invoke("open_window", { url });
+                      invoke("open_window", { url });
                       close();
                     })}
                   >
