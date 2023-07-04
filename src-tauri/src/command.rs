@@ -160,7 +160,8 @@ pub async fn open_window(handle: AppHandle, window: Window, url: String) {
 
   let _ = tauri::WindowBuilder::new(
     &handle,
-    origin.clone(), /* the unique window label */
+    // Window labels must only include alphanumeric characters, `-`, `/`, `:` and `_`.")
+    origin.clone().replace(".", "_"), /* the unique window label */
     tauri::WindowUrl::External(url.parse().unwrap()),
   )
   .initialization_script(init_script)

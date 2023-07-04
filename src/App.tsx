@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import JupyterLogo from "./assets/jupyterlab-wordmark.svg";
 import "./App.css";
-import { open } from "@tauri-apps/api/dialog";
+import { dialog } from "@tauri-apps/api";
 import { invoke, shell } from "@tauri-apps/api";
 import {
   createServerEnhance,
@@ -12,12 +12,26 @@ import {
 } from "./api";
 import { storage } from "./utils";
 import { WebviewWindow } from "@tauri-apps/api/window";
-
+import { useDisclosure } from "@mantine/hooks";
+import { Modal, Button, Group } from "@mantine/core";
+import { Input } from "@mantine/core";
+import { useForm } from "@mantine/form";
 function App() {
   const [server, setServer] = useState<string | null>(null);
   const [newsList, setNewsList] = useState<INewsItem[]>([]);
   const [recentList, setRecentList] = useState<IServerItem[]>([]);
   const [runningServers, setRunningServers] = useState<IServerItem[]>([]);
+
+  const [opened, { open, close }] = useDisclosure(false);
+  const form = useForm({
+    initialValues: {
+      url: "",
+    },
+    validate: {
+      url: (value: string) =>
+        /^https?:\/\/.*/.test(value) ? null : "Invalid URL",
+    },
+  });
 
   // resolve StrictMode in development render twice question
   const renderRef = useRef(true);
@@ -68,7 +82,7 @@ function App() {
                 <a
                   className="action-row"
                   onClick={async () => {
-                    const folder = await open({
+                    const folder = await dialog.open({
                       directory: true,
                       multiple: false,
                     });
@@ -84,7 +98,28 @@ function App() {
 
                 <a className="action-row disabled">新建会话(New Session...)</a>
                 <a className="action-row disabled">新建笔记(New Notebook...)</a>
-                <a className="action-row disabled">连接(Connect...)</a>
+                <a className="action-row " onClick={open}>
+                  连接(Connect...)
+                </a>
+                <Modal opened={opened} onClose={close} title="Connect">
+                  <form
+                    onSubmit={form.onSubmit(async ({ url }) => {
+                      console.log(url);
+                      // invoke("open_window", { url });
+                      close();
+                    })}
+                  >
+                    <Input
+                      placeholder="Your Connect URL"
+                      {...form.getInputProps("url")}
+                    />
+                    <Group position="right">
+                      <Button variant="outline" mt="md" size="sm" type="submit">
+                        Connect
+                      </Button>
+                    </Group>
+                  </form>
+                </Modal>
               </div>
             </div>
             <div>
