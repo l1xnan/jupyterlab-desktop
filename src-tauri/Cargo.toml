@@ -1,6 +1,6 @@
 [package]
 name = "jupyterlab-desktop"
-version = "0.0.0"
+version = "0.0.2"
 description = "JupyterLab Desktop application, based on Tauri"
 authors = ["lixnan@hotmail.com"]
 license = "MIT"
