@@ -13,7 +13,7 @@
 
 .welcome-logo {
   height: 6em;
-  padding-top: 10%;
+  margin-top: 10%;
   padding-bottom: 30px;
   will-change: filter;
   transition: 0.75s;

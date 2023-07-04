@@ -11,6 +11,10 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@mantine/core": "^6.0.16",
+    "@mantine/form": "^6.0.16",
+    "@mantine/hooks": "^6.0.16",
     "@tauri-apps/api": "^1.4.0",
     "fast-xml-parser": "^4.2.5",
     "react": "^18.2.0",
