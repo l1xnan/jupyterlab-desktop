@@ -34,7 +34,7 @@ export async function createServerEnhance(folder: string) {
 
   let recentList = storage.getItem("recentList", []);
   let newList: IServerItem[] = uniqueBy([item, ...recentList], "folder");
-  localStorage.setItem("recentList", JSON.stringify(newList));
+  storage.setItem("recentList", newList);
   return server;
 }
 

@@ -31,7 +31,7 @@ dependencies:
     version: 18.2.0(react@18.2.0)
   tauri-plugin-log-api:
     specifier: github:tauri-apps/tauri-plugin-log#v1
-    version: github.com/tauri-apps/tauri-plugin-log/21921031d74f871180381317a338559f588ad8e9
+    version: github.com/tauri-apps/tauri-plugin-log/e77eea65f074c228aee52c8a1d0ac88ef52827be
 
 devDependencies:
   '@tauri-apps/cli':
@@ -1607,8 +1607,8 @@ packages:
     engines: {node: '>= 6'}
     dev: false
 
-  github.com/tauri-apps/tauri-plugin-log/21921031d74f871180381317a338559f588ad8e9:
-    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-log/tar.gz/21921031d74f871180381317a338559f588ad8e9}
+  github.com/tauri-apps/tauri-plugin-log/e77eea65f074c228aee52c8a1d0ac88ef52827be:
+    resolution: {tarball: https://codeload.github.com/tauri-apps/tauri-plugin-log/tar.gz/e77eea65f074c228aee52c8a1d0ac88ef52827be}
     name: tauri-plugin-log-api
     version: 0.0.0
     dependencies:

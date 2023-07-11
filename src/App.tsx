@@ -10,7 +10,7 @@ import {
   INewsItem,
   IServerItem,
 } from "./api";
-import { storage } from "./utils";
+import { storage, uniqueBy } from "./utils";
 import { WebviewWindow } from "@tauri-apps/api/window";
 import { useDisclosure } from "@mantine/hooks";
 import { Modal, Button, Group } from "@mantine/core";
@@ -107,6 +107,12 @@ function App() {
                       console.log(url);
                       invoke("open_window", { url });
                       close();
+                      let recentList = storage.getItem("recentList", []);
+                      let newList: IServerItem[] = uniqueBy(
+                        [{ link: url }, ...recentList],
+                        "folder"
+                      );
+                      storage.setItem("recentList", newList);
                     })}
                   >
                     <Input
@@ -149,14 +155,19 @@ function App() {
               <div className="row">
                 {recentList?.map((item) => {
                   return (
-                    <div key={item.folder}>
+                    <div key={item.folder ?? item.link}>
                       <a
                         className="action-row"
                         onClick={async () => {
-                          await createServerEnhance(item.folder);
+                          if (item.folder) {
+                            await createServerEnhance(item.folder);
+                          } else {
+                            await invoke("open_window", { url: item.link });
+                          }
                         }}
                       >
-                        {item?.title?.split(/\\|\//).at(-1)}
+                        {item?.title?.split(/\\|\//).at(-1) ??
+                          new URL(item.link).origin}
                       </a>
                       <span style={{ marginLeft: 8 }}>{item.folder}</span>
                     </div>
