@@ -4,7 +4,8 @@ use std::io::Write;
 use rand::distributions::Alphanumeric;
 use rand::thread_rng;
 use rand::Rng;
-use tauri::api::path::home_dir;
+
+pub const MAIN_WIN: &str = "main";
 
 /// 生成 token
 pub fn gen_token() -> String {
@@ -32,7 +33,7 @@ c.ServerApp.tornado_settings.setdefault("headers", {})
 c.ServerApp.tornado_settings["headers"]["Content-Security-Policy"] = "frame-ancestors * 'self'"
 "#;
 
-  if let Some(path) = home_dir() {
+  if let Some(path) = dirs::home_dir() {
     println!("Your home directory, probably: {}", path.display());
     let file = path.join(".jupyter/jupyter_lab_config.py");
     if file.exists() {

@@ -3,7 +3,7 @@ use log::{error, info, warn};
 use std::collections::HashMap;
 use std::process::Command;
 use std::sync::Mutex;
-use tauri::ipc::RemoteDomainAccessScope;
+use tauri::scope::ipc::RemoteDomainAccessScope;
 use tauri::{AppHandle, Manager, Window};
 use url::Url;
 
@@ -181,6 +181,5 @@ pub async fn open_window(handle: AppHandle, window: Window, url: String) {
     RemoteDomainAccessScope::new("localhost")
       .add_window("main")
       .add_window("external")
-      .enable_tauri_api(),
   );
 }

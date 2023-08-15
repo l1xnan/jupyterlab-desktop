@@ -10,45 +10,34 @@
     "productName": "JupyterLab",
     "version": "../package.json"
   },
-  "tauri": {
-    "allowlist": {
-      "all": true,
-      "shell": {
-        "all": true,
-        "execute": true,
-        "open": true,
-        "scope": [
-          {
-            "name": "jupyter",
-            "cmd": "jupyter",
-            "args": true
-          },
-          {
-            "name": "python",
-            "cmd": "python",
-            "args": true
-          }
-        ]
-      },
-      "clipboard": {
-        "all": true
-      },
-      "dialog": {
-        "all": true,
-        "open": true
-      },
-      "http": {
-        "all": true,
-        "request": true,
-        "scope": ["https://blog.jupyter.org/feed"]
-      },
-      "window": {
-        "all": true
-      },
-      "path": {
-        "all": true
-      }
+  "plugins": {
+    "http": {
+      "scope": [
+        "https://blog.jupyter.org/feed"
+      ]
     },
+    "shell": {
+      "open": true,
+      "scope": [
+        {
+          "args": true,
+          "cmd": "jupyter",
+          "name": "jupyter",
+          "sidecar": false
+        },
+        {
+          "args": true,
+          "cmd": "python",
+          "name": "python",
+          "sidecar": false
+        }
+      ]
+    },
+    "updater": {
+      "endpoints": []
+    }
+  },
+  "tauri": {
     "bundle": {
       "active": true,
       "targets": "all",
@@ -59,7 +48,10 @@
         "icons/128x128@2x.png",
         "icons/icon.icns",
         "icons/icon.ico"
-      ]
+      ],
+      "updater": {
+        "active": false
+      }
     },
     "security": {
       "csp": null
@@ -73,13 +65,6 @@
         "height": 800,
         "transparent": true
       }
-    ],
-    "systemTray": {
-      "iconPath": "icons/icon.ico",
-      "iconAsTemplate": true
-    },
-    "updater": {
-      "active": false
-    }
+    ]
   }
 }

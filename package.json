@@ -15,14 +15,18 @@
     "@mantine/core": "^6.0.16",
     "@mantine/form": "^6.0.16",
     "@mantine/hooks": "^6.0.16",
-    "@tauri-apps/api": "^1.4.0",
+    "@tauri-apps/api": "2.0.0-alpha.6",
+    "@tauri-apps/plugin-dialog": "2.0.0-alpha.1",
+    "@tauri-apps/plugin-http": "2.0.0-alpha.1",
+    "@tauri-apps/plugin-log": "2.0.0-alpha.0",
+    "@tauri-apps/plugin-shell": "2.0.0-alpha.1",
+    "@tauri-apps/plugin-window": "2.0.0-alpha.1",
     "fast-xml-parser": "^4.2.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log#v1"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.4.0",
+    "@tauri-apps/cli": "2.0.0-alpha.10",
     "@types/node": "^18.16.18",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",

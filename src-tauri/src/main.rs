@@ -5,17 +5,21 @@ use log::info;
 use std::io;
 use std::sync::Mutex;
 use tauri::{Manager, State, Window};
-use tauri_plugin_log::LogTarget;
+use tauri_plugin_log::{Target, TargetKind};
 
 mod command;
 mod jupyter;
-mod tray;
 mod utils;
 use crate::command::{
   create_server, get_free_port, get_running_servers, greet, open_devtools, open_window,
 };
 use crate::jupyter::{ServerManagerState, ServerManger};
-use crate::tray::MAIN_WIN;
+
+#[cfg(desktop)]
+mod tray;
+
+
+use crate::utils::MAIN_WIN;
 
 #[cfg(target_os = "macos")]
 fn apply_style(window: &Window) {
@@ -91,6 +95,12 @@ fn main() {
     .setup(|app| {
       let window = app.get_window("main").unwrap();
       apply_style(&window);
+
+      #[cfg(desktop)]
+      {
+        let handle = app.handle();
+        tray::create_tray(&handle)?;
+      }
       Ok(())
     })
     .invoke_handler(tauri::generate_handler![
@@ -101,8 +111,6 @@ fn main() {
       get_running_servers,
       open_window,
     ])
-    .system_tray(tray::menu())
-    .on_system_tray_event(tray::handler)
     .on_window_event(|event| match event.event() {
       tauri::WindowEvent::CloseRequested { api, .. } => {
         let win = event.window();
@@ -122,9 +130,13 @@ fn main() {
     })
     .plugin(
       tauri_plugin_log::Builder::default()
-        .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
+        .target(Target::new(TargetKind::Stdout))
+        .target(Target::new(TargetKind::Webview))
         .build(),
     )
+    .plugin(tauri_plugin_dialog::init())
+    .plugin(tauri_plugin_http::init())
+    .plugin(tauri_plugin_window::init())
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }

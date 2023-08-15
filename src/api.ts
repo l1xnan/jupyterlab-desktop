@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api";
-import { ResponseType, getClient } from "@tauri-apps/api/http";
-import { Command } from "@tauri-apps/api/shell";
+import * as http from "@tauri-apps/plugin-http";
+import { Command } from "@tauri-apps/plugin-shell";
 import { XMLParser } from "fast-xml-parser";
 import { storage, uniqueBy } from "./utils";
 
@@ -72,12 +72,9 @@ export async function getNewsList() {
   const maxNewsToShow = 10;
 
   try {
-    const client = await getClient();
-    const response = await client.get(newsFeedUrl, {
-      responseType: ResponseType.Text,
-    });
+    const response = await http.fetch(newsFeedUrl);
 
-    const data: string = response.data as string;
+    const data = await response.text();
     const parser = new XMLParser();
     const feed = parser.parse(data);
     const newsList: INewsItem[] = [];

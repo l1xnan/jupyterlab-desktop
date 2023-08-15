@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import JupyterLogo from "./assets/jupyterlab-wordmark.svg";
 import "./App.css";
-import { dialog } from "@tauri-apps/api";
-import { invoke, shell } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api";
 import {
   createServerEnhance,
   getNewsList,
@@ -11,7 +10,9 @@ import {
   IServerItem,
 } from "./api";
 import { storage, uniqueBy } from "./utils";
-import { WebviewWindow } from "@tauri-apps/api/window";
+import * as shell from '@tauri-apps/plugin-shell';
+import * as dialog from '@tauri-apps/plugin-dialog';
+
 import { useDisclosure } from "@mantine/hooks";
 import { Modal, Button, Group } from "@mantine/core";
 import { Input } from "@mantine/core";
