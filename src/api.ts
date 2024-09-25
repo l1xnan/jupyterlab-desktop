@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import * as http from "@tauri-apps/plugin-http";
 import { Command } from "@tauri-apps/plugin-shell";
 import { XMLParser } from "fast-xml-parser";

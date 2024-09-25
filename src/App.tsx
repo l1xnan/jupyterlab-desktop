@@ -1,7 +1,7 @@
+import { invoke } from "@tauri-apps/api/core";
+import * as dialog from '@tauri-apps/plugin-dialog';
+import * as shell from '@tauri-apps/plugin-shell';
 import { useEffect, useRef, useState } from "react";
-import JupyterLogo from "./assets/jupyterlab-wordmark.svg";
-import "./App.css";
-import { invoke } from "@tauri-apps/api";
 import {
   createServerEnhance,
   getNewsList,
@@ -9,14 +9,13 @@ import {
   INewsItem,
   IServerItem,
 } from "./api";
+import "./App.css";
+import JupyterLogo from "./assets/jupyterlab-wordmark.svg";
 import { storage, uniqueBy } from "./utils";
-import * as shell from '@tauri-apps/plugin-shell';
-import * as dialog from '@tauri-apps/plugin-dialog';
 
-import { useDisclosure } from "@mantine/hooks";
-import { Modal, Button, Group } from "@mantine/core";
-import { Input } from "@mantine/core";
+import { Button, Group, Input, Modal } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useDisclosure } from "@mantine/hooks";
 function App() {
   const [server, setServer] = useState<string | null>(null);
   const [newsList, setNewsList] = useState<INewsItem[]>([]);

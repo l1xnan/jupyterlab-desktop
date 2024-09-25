@@ -11,27 +11,26 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@emotion/react": "^11.11.1",
-    "@mantine/core": "^6.0.16",
-    "@mantine/form": "^6.0.16",
-    "@mantine/hooks": "^6.0.16",
-    "@tauri-apps/api": "2.0.0-alpha.6",
-    "@tauri-apps/plugin-dialog": "2.0.0-alpha.1",
-    "@tauri-apps/plugin-http": "2.0.0-alpha.1",
-    "@tauri-apps/plugin-log": "2.0.0-alpha.0",
-    "@tauri-apps/plugin-shell": "2.0.0-alpha.1",
-    "@tauri-apps/plugin-window": "2.0.0-alpha.1",
-    "fast-xml-parser": "^4.2.5",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "@emotion/react": "^11.13.3",
+    "@mantine/core": "^7.12.2",
+    "@mantine/form": "^7.12.2",
+    "@mantine/hooks": "^7.12.2",
+    "@tauri-apps/api": "2.0.0-rc.5",
+    "@tauri-apps/plugin-dialog": "2.0.0-rc.1",
+    "@tauri-apps/plugin-http": "2.0.0-rc.2",
+    "@tauri-apps/plugin-log": "2.0.0-rc.1",
+    "@tauri-apps/plugin-shell": "2.0.0-rc.1",
+    "fast-xml-parser": "^4.5.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "2.0.0-alpha.10",
-    "@types/node": "^18.16.18",
-    "@types/react": "^18.2.14",
-    "@types/react-dom": "^18.2.6",
-    "@vitejs/plugin-react": "^3.1.0",
-    "typescript": "^4.9.5",
-    "vite": "^4.3.9"
+    "@tauri-apps/cli": "2.0.0-rc.16",
+    "@types/node": "^22.7.0",
+    "@types/react": "^18.3.9",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.7"
   }
 }

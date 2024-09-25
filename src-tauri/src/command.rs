@@ -3,7 +3,7 @@ use log::{error, info, warn};
 use std::collections::HashMap;
 use std::process::Command;
 use std::sync::Mutex;
-use tauri::scope::ipc::RemoteDomainAccessScope;
+// use tauri::scope::ipc::RemoteDomainAccessScope;
 use tauri::{AppHandle, Manager, Window};
 use url::Url;
 
@@ -31,7 +31,7 @@ pub async fn get_free_port() -> u16 {
 
 #[tauri::command]
 pub fn open_devtools(window: Window) {
-  window.open_devtools();
+  // window.open_devtools();
 }
 
 #[tauri::command]
@@ -71,10 +71,10 @@ pub async fn create_server(handle: AppHandle, window: Window, folder: &str) -> R
   let server = Server::new(url.as_str(), folder);
 
   let origin = server.origin.clone().unwrap();
-  let _ = tauri::WindowBuilder::new(
+  let _ = tauri::WebviewWindowBuilder::new(
     &handle,
     origin.clone(), /* the unique window label */
-    tauri::WindowUrl::External(url.parse().unwrap()),
+    tauri::WebviewUrl::External(url.parse().unwrap()),
   )
   .title(origin)
   .inner_size(1200.0, 800.0)
@@ -84,7 +84,7 @@ pub async fn create_server(handle: AppHandle, window: Window, folder: &str) -> R
   let mut servers = SERVERS.lock().unwrap();
   servers.insert(server.origin.clone().unwrap(), server.clone());
 
-  if let Some(main_win) = window.get_window("main") {
+  if let Some(main_win) = window.get_webview_window("main") {
     main_win.set_focus().unwrap_or(());
     main_win.unminimize().unwrap_or(());
     main_win.hide().unwrap_or(());
@@ -158,11 +158,11 @@ pub async fn open_window(handle: AppHandle, window: Window, url: String) {
   let href: Url = Url::parse(url.as_str()).unwrap();
   let origin = href.origin().unicode_serialization();
 
-  let _ = tauri::WindowBuilder::new(
+  let _ = tauri::WebviewWindowBuilder::new(
     &handle,
     // Window labels must only include alphanumeric characters, `-`, `/`, `:` and `_`.")
     origin.clone().replace(".", "_"), /* the unique window label */
-    tauri::WindowUrl::External(url.parse().unwrap()),
+    tauri::WebviewUrl::External(url.parse().unwrap()),
   )
   .initialization_script(init_script)
   .title(origin)
@@ -171,15 +171,15 @@ pub async fn open_window(handle: AppHandle, window: Window, url: String) {
   .build()
   .unwrap();
 
-  if let Some(main_win) = window.get_window("main") {
+  if let Some(main_win) = window.get_webview_window("main") {
     main_win.set_focus().unwrap_or(());
     main_win.unminimize().unwrap_or(());
     main_win.hide().unwrap_or(());
   }
 
-  handle.ipc_scope().configure_remote_access(
-    RemoteDomainAccessScope::new("localhost")
-      .add_window("main")
-      .add_window("external")
-  );
+  // handle.ipc_scope().configure_remote_access(
+  //   RemoteDomainAccessScope::new("localhost")
+  //     .add_window("main")
+  //     .add_window("external")
+  // );
 }

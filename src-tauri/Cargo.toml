@@ -10,20 +10,20 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-alpha.8", features = [] }
+tauri-build = { version = "2.0.0-rc", features = [] }
 
 [dependencies]
-tauri = { version = "2.0.0-alpha", features = [
+tauri = { version = "2.0.0-rc", features = [
     "devtools",
-    "icon-ico",
-    "icon-png",
+    "image-ico",
+    "image-png",
     "tray-icon",
 ] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 portpicker = "0.1.1"
 rand = "0.8.5"
-window-vibrancy = "0.3.2"
+window-vibrancy = "0.5"
 url = "2.4.0"
 os_info = "3.7.0"
 log = "0.4.19"
@@ -32,12 +32,12 @@ dirs = "5.0.1"
 sys-locale = "0.3.0"
 
 # tauri plugin
-tauri-plugin-shell = "2.0.0-alpha.1"
-tauri-plugin-log = "2.0.0-alpha.1"
-tauri-plugin-dialog = "2.0.0-alpha.1"
-tauri-plugin-http = "2.0.0-alpha.1"
-tauri-plugin-window = "2.0.0-alpha.1"
-tauri-plugin-store = "2.0.0-alpha.1"
+tauri-plugin-shell = "2.0.0-rc"
+tauri-plugin-log = "2.0.0-rc"
+tauri-plugin-dialog = "2.0.0-rc"
+tauri-plugin-http = "2.0.0-rc"
+# tauri-plugin-window = "2.0.0-rc"
+tauri-plugin-store = "2.0.0-rc"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.50.0"

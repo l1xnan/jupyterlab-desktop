@@ -45,7 +45,7 @@ c.ServerApp.tornado_settings["headers"]["Content-Security-Policy"] = "frame-ance
         let mut writer = fs::OpenOptions::new()
           .write(true)
           .append(true) // This is needed to append to file
-          .open(file.as_path().clone())
+          .open(file.as_path())
           .unwrap();
         let _ = writer.write(conf.as_bytes());
       }

@@ -29,12 +29,12 @@ fn apply_style(window: &Window) {
 }
 
 #[cfg(target_os = "windows")]
-fn apply_style(window: &Window) {
+fn apply_style(window: &tauri::WebviewWindow) {
   let info = os_info::get();
   let win11 = os_info::Version::Semantic(11, 0, 0);
   if info.version().to_owned() > win11 {
     use window_vibrancy::apply_mica;
-    apply_mica(&window).expect("Unsupported platform! 'apply_mica' is only supported on Windows");
+    apply_mica(&window, None).expect("Unsupported platform! 'apply_mica' is only supported on Windows");
   }
   println!("Version: {}", info.version());
 }
@@ -93,7 +93,7 @@ fn main() {
   tauri::Builder::default()
     .manage(state)
     .setup(|app| {
-      let window = app.get_window("main").unwrap();
+      let window = app.get_webview_window("main").unwrap();
       apply_style(&window);
 
       #[cfg(desktop)]
@@ -111,9 +111,8 @@ fn main() {
       get_running_servers,
       open_window,
     ])
-    .on_window_event(|event| match event.event() {
+    .on_window_event(|win, event| match event {
       tauri::WindowEvent::CloseRequested { api, .. } => {
-        let win = event.window();
         info!("close request window title: {}", win.title().unwrap());
         if win.label() == MAIN_WIN {
           win.hide().unwrap();
@@ -123,7 +122,7 @@ fn main() {
         }
       }
       tauri::WindowEvent::Destroyed => {
-        let state: State<ServerManagerState> = event.window().state();
+        let state: State<ServerManagerState> = win.state();
         state.manager_mutex.lock().unwrap().kill();
       }
       _ => {}
@@ -136,7 +135,7 @@ fn main() {
     )
     .plugin(tauri_plugin_dialog::init())
     .plugin(tauri_plugin_http::init())
-    .plugin(tauri_plugin_window::init())
+    // .plugin(tauri_plugin_window::init())
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
